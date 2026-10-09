@@ -1,0 +1,5 @@
+# Бинарные файлы: без преобразования переводов строк
+*.pdf binary
+*.docx binary
+*.png binary
+*.jpg binary
