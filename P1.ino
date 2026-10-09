@@ -3,6 +3,7 @@
 
 #include "src/board_config.h"
 #include "src/can/twai_bus.h"
+#include "src/input/buttons.h"
 #include "src/ui/display.h"
 #include "src/ui/sniffer_screen.h"
 
@@ -17,6 +18,7 @@ void setup() {
     tft.drawString("TWAI init failed", 10, 10);
     for (;;) vTaskDelay(portMAX_DELAY);
   }
+  input::begin();
   ui::snifferBegin();
 }
 

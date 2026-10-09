@@ -1,6 +1,7 @@
 #include "sniffer_screen.h"
 
 #include "../can/twai_bus.h"
+#include "../input/buttons.h"
 #include "display.h"
 
 namespace ui {
@@ -14,7 +15,6 @@ static constexpr uint32_t kStaleMs = 2000;
 static LGFX_Sprite s_row(&tft);
 static canbus::IdEntry s_entries[canbus::kMaxIds];
 static int s_page;
-static bool s_touchWasDown;
 
 static int rowsPerPage() { return (tft.height() - kHeaderH) / kRowH; }
 
@@ -67,19 +67,19 @@ void snifferLoop() {
   static uint32_t lastDraw;
   uint32_t now = millis();
 
-  int32_t tx, ty;
-  bool down = tft.getTouch(&tx, &ty) > 0;
-  bool tapped = down && !s_touchWasDown;
-  s_touchWasDown = down;
+  // RIGHT или BOOT — следующая страница, LEFT — предыдущая
+  input::Event ev = input::poll();
+  int step = ev == input::Event::Right || ev == input::Event::Boot ? 1
+             : ev == input::Event::Left                            ? -1
+                                                                   : 0;
 
-  if (!tapped && now - lastDraw < kRefreshMs) return;
+  if (step == 0 && now - lastDraw < kRefreshMs) return;
   lastDraw = now;
 
   size_t n = canbus::snapshot(s_entries, canbus::kMaxIds);
   int perPage = rowsPerPage();
   int pages = n == 0 ? 1 : (int)((n + perPage - 1) / perPage);
-  if (tapped) s_page++;
-  if (s_page >= pages) s_page = 0;
+  s_page = (s_page + step + pages) % pages;
 
   drawHeader(canbus::stats(), n, pages);
 

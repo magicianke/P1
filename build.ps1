@@ -17,13 +17,11 @@ $Cli = "$env:LOCALAPPDATA\Programs\Arduino IDE\resources\app\lib\backend\resourc
 $Sketch = $PSScriptRoot
 $BuildDir = Join-Path $PSScriptRoot 'build'
 
-# Безопасные настройки, подходящие для любой версии модуля.
-# После `chipinfo` поменять, например для N16R8:
-#   FlashSize=16M, PartitionScheme=app3M_fat9M_16MB, PSRAM=opi
+# Модуль ESP32-S3-DevKitC-1 N16R8: 16 МБ flash, 8 МБ OPI PSRAM (см. docs/hardware.md).
 $BoardOptions = @(
-    'FlashSize=4M'
-    'PartitionScheme=default'
-    'PSRAM=disabled'
+    'FlashSize=16M'
+    'PartitionScheme=app3M_fat9M_16MB'
+    'PSRAM=opi'
     'USBMode=hwcdc'
     'CDCOnBoot=cdc'      # Serial = нативный USB (порт "USB" на плате)
     'CPUFreq=240'
