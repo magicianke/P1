@@ -4,7 +4,8 @@
 // Плата P1 ревизии 1.0. Источник истины — docs/hardware.md (и схема в docs/hardware/).
 // Сначала меняется hardware.md, потом этот файл.
 //
-// Модуль: ESP32-S3-DevKitC-1 N16R8 (16 МБ flash, 8 МБ OPI PSRAM).
+// Модуль: клон ESP32-S3-DevKitC-1 N16R8 (16 МБ flash, 8 МБ OPI PSRAM), распиновка как у DevKitC-1.
+// На GPIO48 у клона RGB-светодиод (плата GPIO48 не использует).
 // НЕ использовать:
 //   GPIO0, 3, 45, 46 — strapping-пины (GPIO0 — только чтение кнопки BOOT после старта)
 //   GPIO19, 20       — нативный USB (D-/D+)
@@ -51,6 +52,7 @@ namespace cfg {
 // Если на экране негатив (чёрный фон стал белым) — поменять на false.
 constexpr bool kTftInvert = true;
 // SCK через GPIO matrix: начинать с 27 МГц, повышать только при стабильной картинке.
+// Шлейф дисплея 30 см: при артефактах снижать до 20 или 10 МГц.
 constexpr uint32_t kTftSpiHz = 27000000;
 
 // H1 запаян и джойстик подключён. Пока false — листание кнопкой BOOT.
@@ -61,5 +63,7 @@ constexpr bool kJoyActiveLow = true;
 
 // Дамп всех кадров CAN в Serial в формате candump -L (читается SavvyCAN / can-utils)
 constexpr bool kSerialDump = true;
+// Период строки "# P1 alive ..." в Serial (комментарий, не кадр candump)
+constexpr uint32_t kAliveMs = 5000;
 
 }  // namespace cfg
