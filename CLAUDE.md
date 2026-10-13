@@ -54,6 +54,7 @@ CAN-бус ридер и приборная панель на **ESP32-S3** с **
 .\build.ps1 flash -Port COM5   # прошить и открыть монитор
 .\build.ps1 chipinfo           # размер flash / PSRAM
 ```
+Протокол первого запуска платы (порт, chipinfo, вывод монитора, настройки Arduino IDE) — [`docs/first_run.md`](docs/first_run.md).
 `build.ps1` должен оставаться в **UTF-8 с BOM**, иначе Windows PowerShell 5.1 ломает кириллицу.
 Структура скетча: arduino-cli компилирует корень и всё внутри `src/`, поэтому весь код лежит в `src/`, а `P1.ino` подключает его как `#include "src/..."`.
 
