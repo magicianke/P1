@@ -7,11 +7,26 @@
 #include "src/ui/display.h"
 #include "src/ui/sniffer_screen.h"
 
+// Диагностика подсветки (cfg::kTftBlDiag): только GPIO9, без дисплея и CAN.
+// Остальные пины H5 остаются входами. Из этого режима не выходим.
+static void backlightDiag() {
+  pinMode(pins::kTftBl, OUTPUT);
+  bool on = false;
+  for (uint32_t n = 0;; n++) {
+    on = !on;
+    digitalWrite(pins::kTftBl, on ? HIGH : LOW);
+    Serial.printf("# P1 BL diag GPIO%d = %s (%lu)\n", pins::kTftBl, on ? "HIGH 3.3V" : "LOW 0V",
+                  (unsigned long)n);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}
+
 // Дисплей только на запись (без MISO), поэтому init() не ждёт ответа
 // и не зависает, даже если модуль не подключён.
 void setup() {
   Serial.setTxBufferSize(16384);
   Serial.begin(2000000);
+  if (cfg::kTftBlDiag) backlightDiag();
 
   ui::displayBegin();
   if (!canbus::begin(cfg::kSerialDump)) {

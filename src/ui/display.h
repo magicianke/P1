@@ -2,12 +2,18 @@
 #define LGFX_USE_V1
 #include <LovyanGFX.hpp>
 
+#include <type_traits>
+
 #include "../board_config.h"
 
-// ILI9488 320x480 по SPI. Тач на модуле есть, но на плату не выведен.
-// В режиме SPI ILI9488 принимает только 18-битный цвет — LovyanGFX конвертирует сам.
+// Дисплей 320x480 по SPI, контроллер выбирается в cfg::kTftController.
+// ILI9488 в режиме SPI принимает только 18-битный цвет, ST7796 — 16-битный;
+// LovyanGFX конвертирует сам.
+using TftPanel = std::conditional_t<cfg::kTftController == cfg::TftController::ST7796,
+                                    lgfx::Panel_ST7796, lgfx::Panel_ILI9488>;
+
 class LGFX : public lgfx::LGFX_Device {
-  lgfx::Panel_ILI9488 _panel;
+  TftPanel _panel;
   lgfx::Bus_SPI _bus;
   lgfx::Light_PWM _light;
 
@@ -40,7 +46,7 @@ class LGFX : public lgfx::LGFX_Device {
       cfg.offset_rotation = 0;
       cfg.readable = false;  // MISO нет (SDO не подключён)
       cfg.invert = cfg::kTftInvert;
-      cfg.rgb_order = false;
+      cfg.rgb_order = !cfg::kTftBgr;  // в LovyanGFX false = бит BGR в MADCTL
       cfg.dlen_16bit = false;
       cfg.bus_shared = false;
       _panel.config(cfg);
@@ -61,5 +67,6 @@ class LGFX : public lgfx::LGFX_Device {
 extern LGFX tft;
 
 namespace ui {
+// Инициализация и тестовый экран на cfg::kTftTestMs (блокирует только setup()).
 void displayBegin();
 }

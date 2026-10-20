@@ -15,7 +15,7 @@
 
 namespace pins {
 
-// Дисплей ILI9488, гнездо H5. SCK не на IOMUX-пине — сигнал идёт через GPIO matrix.
+// Дисплей 3.5" IPS, 8 выводов (ILI9488 или ST7796, см. cfg::kTftController), гнездо H5. SCK не на IOMUX-пине — сигнал идёт через GPIO matrix.
 constexpr int kTftSclk = 10;  // H5 pin 7
 constexpr int kTftMosi = 11;  // H5 pin 6 (SDI)
 constexpr int kTftMiso = -1;  // SDO (GPIO46, strapping) не используется: контакт не пропаян
@@ -48,12 +48,27 @@ constexpr int kBootButton = 0;
 
 namespace cfg {
 
-// IPS-матрицы ILI9488 обычно требуют инверсии цвета.
-// Если на экране негатив (чёрный фон стал белым) — поменять на false.
+// --- Дисплей: переключатели для подбора на железе (тестовый экран при старте) ---
+enum class TftController { ILI9488, ST7796 };
+// Подтверждено 2026-10-20 на тестовом экране: ILI9488, inv:1 bgr:1 rot:1, 20 МГц.
+// Белый экран или мусор при правильной подсветке — попробовать другой контроллер.
+constexpr TftController kTftController = TftController::ILI9488;
+// IPS-матрицам обычно нужна инверсия.
+// Если на экране негатив (чёрная полоса белая, красная голубая) — поменять.
 constexpr bool kTftInvert = true;
-// SCK через GPIO matrix: начинать с 27 МГц, повышать только при стабильной картинке.
-// Шлейф дисплея 30 см: при артефактах снижать до 20 или 10 МГц.
-constexpr uint32_t kTftSpiHz = 27000000;
+// Порядок цветов (бит MADCTL): true — BGR (норма для ILI9488 и ST7796), false — RGB.
+// Если красная и синяя полосы поменялись местами — поменять.
+constexpr bool kTftBgr = true;
+// Поворот: 0/2 — портрет 320x480, 1/3 — альбом 480x320 (1 и 3 отличаются на 180°).
+constexpr uint8_t kTftRotation = 1;
+// SCK через GPIO matrix, шлейф 30 см: 20 МГц стабильно.
+// Повышать (27 МГц и выше) только с проверкой на тестовом экране, при артефактах — 10 МГц.
+constexpr uint32_t kTftSpiHz = 20000000;
+// Тестовый экран при старте (полосы, рамка, название контроллера), мс. 0 — не показывать.
+constexpr uint32_t kTftTestMs = 1000;
+// Диагностика подсветки: вместо обычной прошивки GPIO9 (BL) мигает 1 с / 1 с
+// через digitalWrite, без LovyanGFX и CAN. Состояние пишется в Serial.
+constexpr bool kTftBlDiag = false;
 
 // H1 запаян и джойстик подключён. Пока false — листание кнопкой BOOT.
 constexpr bool kControlsConnected = false;
