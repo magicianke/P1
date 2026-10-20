@@ -1,11 +1,15 @@
 // CAN-ридер для Subaru Impreza GH 2.0 / 4EAT TZ1
-// Этап 1: дисплей + сниффер CAN (только прослушивание)
+// Этап 1: дисплей, приборка и сниффер CAN (только прослушивание)
 
 #include "src/board_config.h"
 #include "src/can/twai_bus.h"
 #include "src/input/buttons.h"
+#include "src/ui/dash_screen.h"
 #include "src/ui/display.h"
 #include "src/ui/sniffer_screen.h"
+
+// Экраны по кругу кнопкой BOOT (пока джойстик на H1 не подключён). Первый — приборка.
+static bool s_snifferShown = false;
 
 // Диагностика подсветки (cfg::kTftBlDiag): только GPIO9, без дисплея и CAN.
 // Остальные пины H5 остаются входами. Из этого режима не выходим.
@@ -40,7 +44,9 @@ void setup() {
     }
   }
   input::begin();
+  ui::dashBegin();
   ui::snifferBegin();
+  ui::dashEnter();
 }
 
 // Строка-комментарий раз в kAliveMs: без кадров на шине видно, что прошивка жива.
@@ -60,7 +66,16 @@ static void serialHeartbeat() {
 }
 
 void loop() {
-  ui::snifferLoop();
+  input::Event ev = input::poll();
+  if (ev == input::Event::Boot) {
+    s_snifferShown = !s_snifferShown;
+    if (s_snifferShown) ui::snifferEnter();
+    else ui::dashEnter();
+    Serial.printf("# P1 screen: %s\n", s_snifferShown ? "sniffer" : "dash");
+    ev = input::Event::None;
+  }
+  if (s_snifferShown) ui::snifferLoop(ev);
+  else ui::dashLoop();
   serialHeartbeat();
   vTaskDelay(pdMS_TO_TICKS(10));
 }

@@ -15,6 +15,7 @@ static constexpr uint32_t kStaleMs = 2000;
 static LGFX_Sprite s_row(&tft);
 static canbus::IdEntry s_entries[canbus::kMaxIds];
 static int s_page;
+static bool s_redraw = true;  // перерисовать сразу (после snifferEnter)
 
 static int rowsPerPage() { return (tft.height() - kHeaderH) / kRowH; }
 
@@ -60,21 +61,23 @@ void snifferBegin() {
   s_row.createSprite(tft.width(), kRowH);
   s_row.setFont(&fonts::Font0);
   s_row.setTextSize(2);
-  tft.fillScreen(TFT_BLACK);
 }
 
-void snifferLoop() {
+void snifferEnter() {
+  tft.fillScreen(TFT_BLACK);
+  s_redraw = true;
+}
+
+void snifferLoop(input::Event ev) {
   static uint32_t lastDraw;
   uint32_t now = millis();
 
-  // RIGHT или BOOT — следующая страница, LEFT — предыдущая
-  input::Event ev = input::poll();
-  int step = ev == input::Event::Right || ev == input::Event::Boot ? 1
-             : ev == input::Event::Left                            ? -1
-                                                                   : 0;
+  // RIGHT — следующая страница, LEFT — предыдущая
+  int step = ev == input::Event::Right ? 1 : ev == input::Event::Left ? -1 : 0;
 
-  if (step == 0 && now - lastDraw < kRefreshMs) return;
+  if (step == 0 && !s_redraw && now - lastDraw < kRefreshMs) return;
   lastDraw = now;
+  s_redraw = false;
 
   size_t n = canbus::snapshot(s_entries, canbus::kMaxIds);
   int perPage = rowsPerPage();

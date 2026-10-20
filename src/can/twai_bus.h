@@ -2,6 +2,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "signals.h"
+
 namespace canbus {
 
 constexpr size_t kMaxIds = 160;
@@ -35,5 +37,8 @@ Stats stats();
 
 // Копия таблицы ID, отсортированной по ID. Возвращает число записей.
 size_t snapshot(IdEntry* out, size_t max);
+
+// Копия состояния сигналов приборки (разбирается в задаче приёма).
+sig::DashState dash();
 
 }  // namespace canbus

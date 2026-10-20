@@ -14,6 +14,7 @@ static IdEntry s_table[kMaxIds];
 static size_t s_count;
 static Stats s_stats;
 static bool s_dump;
+static sig::DashState s_dash;
 
 // Таблица отсортирована по ID — бинарный поиск, вставка со сдвигом (редко)
 static IdEntry* findOrInsert(uint32_t id, bool ext) {
@@ -84,6 +85,10 @@ static void rxTask(void*) {
       uint32_t now = millis();
       xSemaphoreTake(s_lock, portMAX_DELAY);
       update(m, now);
+      if (!m.extd) {
+        uint8_t dlc = m.data_length_code > 8 ? 8 : m.data_length_code;
+        sig::decode(s_dash, m.identifier, dlc, m.data, now);
+      }
       s_stats.rx_total++;
       xSemaphoreGive(s_lock);
       secCount++;
@@ -138,6 +143,13 @@ size_t snapshot(IdEntry* out, size_t max) {
   memcpy(out, s_table, n * sizeof(IdEntry));
   xSemaphoreGive(s_lock);
   return n;
+}
+
+sig::DashState dash() {
+  xSemaphoreTake(s_lock, portMAX_DELAY);
+  sig::DashState s = s_dash;
+  xSemaphoreGive(s_lock);
+  return s;
 }
 
 }  // namespace canbus

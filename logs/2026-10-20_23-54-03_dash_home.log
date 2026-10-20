@@ -1,0 +1,4 @@
+# P1 display test: ILI9488 inv:1 bgr:1 rot:1 spi:20000000Hz 480x320
+# P1 alive 5s rx:0 fr/s:0 miss:0 err:0 drop:0
+# P1 alive 10s rx:0 fr/s:0 miss:0 err:0 drop:0
+# P1 alive 15s rx:0 fr/s:0 miss:0 err:0 drop:0

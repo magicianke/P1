@@ -1,8 +1,10 @@
 #pragma once
+#include "../input/buttons.h"
 
 // Экран сниффера: таблица CAN ID с подсветкой изменившихся байтов.
-// Листание: джойстик RIGHT/LEFT, без H1 — кнопка BOOT (вперёд по кругу).
+// Листание: джойстик RIGHT/LEFT (BOOT переключает экраны, см. P1.ino).
 namespace ui {
-void snifferBegin();
-void snifferLoop();
+void snifferBegin();  // один раз: создать спрайт строки
+void snifferEnter();  // при переключении на экран
+void snifferLoop(input::Event ev);
 }  // namespace ui
